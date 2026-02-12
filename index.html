@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Даня + Лера: История любви</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --accent-color: #ff2e63;
+            --text-color: #e0e0e0;
+            --tg-border: #333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        #hearts-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .heart-particle {
+            position: absolute;
+            color: var(--accent-color);
+            opacity: 0.3;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) scale(0); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle, rgba(255,46,99,0.1) 0%, rgba(10,10,10,1) 70%);
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 4rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255,46,99,0.5);
+        }
+
+        #timer {
+            background: var(--card-bg);
+            padding: 20px 40px;
+            border-radius: 50px;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 15px rgba(255,46,99,0.3);
+            font-size: 1.2rem;
+            display: flex;
+            gap: 15px;
+        }
+
+        .timer-unit span {
+            display: block;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .timeline {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .timeline-item {
+            margin-bottom: 60px;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .date-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .poem {
+            font-style: italic;
+            color: #ff85a1;
+            white-space: pre-line;
+            margin: 15px 0;
+            padding-left: 15px;
+            border-left: 2px solid #555;
+        }
+
+        .tg-video-wrapper {
+            width: 280px;
+            height: 280px;
+            margin: 20px 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tg-video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid var(--tg-border);
+            background: #000;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            width: 60px; height: 60px;
+            display: flex; justify-content: center; align-items: center;
+            transition: 0.3s;
+        }
+
+        .media-photo {
+            max-width: 100%;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
+
+        footer { text-align: center; padding: 100px 20px; font-family: 'Pacifico', cursive; color: var(--accent-color); font-size: 2rem; }
+        /* Стиль для окна увеличения */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    cursor: zoom-out;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255,46,99,0.5);
+    animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Добавим курсор лупы на все фото */
+.media-photo, .timeline-item img {
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
+}
+
+.media-photo:hover, .timeline-item img:hover {
+    transform: scale(1.02);
+}
+    </style>
+</head>
+<body>
+    <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg"></div>
+
+<div id="hearts-bg"></div>
+
+<header>
+    <h1>Даня & Лера</h1>
+    <div id="timer"></div>
+</header>
+
+<div class="timeline" id="main-timeline">
+    <div class="timeline-item">
+        <div class="date-badge">27 августа 2025 • 22:57:15</div>
+        <div class="content-card">
+            <h3>Момент, когда всё началось ❤️</h3>
+            <p>В эту секунду началась история, которая изменила всё.</p>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">6 - 8 сентября 2025</div>
+        <div class="content-card">
+            <h3>Первые встречи</h3>
+            <p><strong>6 сентября:</strong> Вечер первой встречи. Кружочек и то самое фото.</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="первая встреча.mp4" loop playsinline></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+            <img src="первое фото.jpg" class="media-photo">
+            
+            <p style="margin-top:15px;">Первые обнимашки в тот же вечер:</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="Первые обнимашки.mp4" loop playsinline></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+
+            <hr style="margin:20px 0; border:0; border-top:1px solid #333;">
+            <p><strong>8 сентября:</strong> Через два дня — вторые обнимашки:</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="вторые обнимашки.mp4" loop playsinline></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">12 сентября 2025 • 15:10:58</div>
+        <div class="content-card" style="border-color: #ff2e63; background: linear-gradient(145deg, #1a1a1a, #2a1015);">
+            <h2 style="color: var(--accent-color);">Официальное начало отношений 💍</h2>
+            <p>С этого момента мы официально Даня и Лера.</p>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">Сентябрь: Продолжение</div>
+        <div class="content-card">
+            <h3>Хроника сентября 📸</h3>
+            <p>16.09 — Завариваем чайочек ☕</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="завариваем чайочек 16 сентября.mp4" loop></video></div>
+            
+            <p>17.09 — Тигрица богиня 🐯</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="Тигрица богиня 17 сентября.mp4" loop></video></div>
+            
+            <p>18.09 — В переодевалке ✨</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="в переодевалке 18 сентября.mp4" loop></video></div>
+            
+            <p>19.09 — Вечерний Киев 🌃</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="После прогулки по киеву вечером 19 сентября.mp4" loop></video></div>
+            
+            <p>20.09 — На дополнительное 📚</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="топаем на дополнительное 20 сентября.mp4" loop></video></div>
+            
+            <p>21.09 — На дне рождения 🎉</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="на дне рождения 21 сентября.mp4" loop></video></div>
+            
+            <p>26.09 — Милые волосы 💇‍♀️</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="милые волосы 26 сентября.mp4" loop></video></div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">24 - 28 сентября</div>
+        <div class="content-card">
+            <p>📞 <strong>24.09:</strong> Первый звонок</p>
+            <p>🎥 <strong>25.09:</strong> Первый видеозвонок</p>
+            <h3 style="margin-top:15px;">28 сентября: День поцелуев</h3>
+            <p>Первый поцелуйчик от Леры ❤️</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="первый поцелуйчик на кружочек 28 сентября.mp4" loop></video></div>
+            <p>Реакция Дани:</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="реакция на поцелуйчик.mp4" loop></video></div>
+            <p>В пономарке на службе (первый от Дани):</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="в пономарке на службе 28 сентября.mp4" loop></video></div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">3 - 7 октября 2025</div>
+        <div class="content-card">
+            <p><strong>3 октября:</strong> Обмен поцелуйчиками вечером 💋</p>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="тоже поцелуйчик 3 октября.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="поцелуйчик от леры.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+            </div>
+            <p><strong>5 октября:</strong> Прическа 🎀 и Даня в зеркале</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="5 октября прическа.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="просто даня в зеркале.mp4" loop></video></div>
+            <img src="на дне рождения у подруги.jpg" class="media-photo">
+            <p><strong>7 октября:</strong> Сонная Лерочка и кружочек с моря 🌊</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="сонная лерочка.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="На море.mp4" loop></video></div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">10 - 18 октября 2025</div>
+        <div class="content-card">
+            <p><strong>10 октября:</strong> Первый стих Дани ✍️</p>
+            <div class="poem">Ты свет в моем мире, как солнышко утром...</div>
+            
+            <p><strong>11-12 октября:</strong> Поцелуйчики и ночные стихи</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="11 октября.mp4" loop></video></div>
+            <div class="poem">Смотрю в твои глаза, и мир затих...</div>
+            <div class="poem">Вот забыть все то что сказано и спето...</div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="Еще милый поцелуйчик.mp4" loop></video></div>
+
+            <hr style="margin:20px 0; border:0; border-top:1px solid #ff2e63;">
+            <h3 style="color:var(--accent-color);">18 ОКТЯБРЯ — ВСТРЕЧА! ✨</h3>
+            <p>Первый поцелуй в 13:08. Блокнотики расстояния 📖</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="первый поцелуй.mp4" loop></video></div>
+            <img src="в тейсти.jpg" class="media-photo">
+            <img src="фото поцелуя.jpg" class="media-photo">
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="поцелуй в парке.mp4" loop></video></div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">22 - 31 октября 2025</div>
+        <div class="content-card">
+            <p><strong>22.10:</strong> Настроение баловаться 🤪</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="настроение побаловаться.mp4" loop></video></div>
+            
+            <p><strong>29.10:</strong> Набережная, блокнотики и «За ручки» 🤝</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="поменялись блокнотиками.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="целуемся.mp4" loop></video></div>
+            <img src="За ручки.jpg" class="media-photo">
+            <img src="совместная.jpg" class="media-photo">
+            
+            <p><strong>30.10:</strong> Даня нарисовал Лерочку 🎨</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="нарисовал лерочку.mp4" loop></video></div>
+            
+            <p><strong>31.10:</strong> Милая Лера и солнышко ☀️</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="милая лерочка с поцелуйчиком.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="на фоне солнышка.mp4" loop></video></div>
+        </div>
+        <div class="timeline-item">
+        <div class="date-badge">5 - 6 ноября 2025</div>
+        <div class="content-card">
+            <p><strong>5 ноября:</strong> Милота и Даня снова в зеркале ✨</p>
+            <img src="милота.jpg" class="media-photo">
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="даня опять в зеркале.mp4" loop></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+
+            <div class="poem" style="color: #ff2e63; font-weight: bold; border-left-color: #ff2e63;">
+                "Моя душа полыхает ярче тысячу тысяч солнц... ты не просто любимая, ты центр моего мироздания. Весь мой мир танцует вокруг твоего имени. Ты моё сладкое безумие, моя негасимая страсть... ты моя абсолютная неповторимая катастрофа счастья."
+            </div>
+
+            <p><strong>6 ноября:</strong> Даня в зеркале (теперь фото):</p>
+            <img src="даня в зеркале.jpg" class="media-photo">
+            <img src="Опять даня в зеркале.jpg" class="media-photo">
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">7 - 14 ноября 2025</div>
+        <div class="content-card">
+            <p><strong>7 ноября:</strong> Лерочка на фоне моря (воспоминания о лете) 🌊</p>
+            <img src="на фоне моря.jpg" class="media-photo">
+            
+            <p><strong>11-12 ноября:</strong> Будни Дани</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="в зеркале.mp4" loop></video></div>
+            <p>Крутим кубик 🎲</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="крутим кубик.mp4" loop></video></div>
+
+            <p><strong>13-14 ноября:</strong> Милые губки)</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="милые губки лерочки.mp4" loop></video></div>
+            <img src="Гы.jpg" class="media-photo">
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge" style="background: #e91e63;">15 - 16 ноября 2025</div>
+        <div class="content-card" style="border-left-color: #e91e63;">
+            <h3>Лерочка приехала в Киев! 🚆</h3>
+            <p><strong>15 ноября:</strong> В общаге и бесконечные поцелуи ✨</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="В общаге.mp4" loop></video></div>
+            <img src="фото в общаге.jpg" class="media-photo">
+            
+            <p>Целуемся)) ❤️</p>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="целуемся)).mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="еще целуемся.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+</div>
+
+            <p><strong>16 ноября:</strong> Парк Совки и очень много фото 🌳</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="парк совки.mp4" loop></video></div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5px; margin-top: 10px;">
+                <img src="1.jpg" style="width:100%; border-radius:5px;">
+                <img src="2.jpg" style="width:100%; border-radius:5px;">
+                <img src="3.jpg" style="width:100%; border-radius:5px;">
+                <img src="4.jpg" style="width:100%; border-radius:5px;">
+                <img src="5.jpg" style="width:100%; border-radius:5px;">
+                <img src="6.jpg" style="width:100%; border-radius:5px;">
+                <img src="7.jpg" style="width:100%; border-radius:5px;">
+                <img src="8.jpg" style="width:100%; border-radius:5px;">
+                <img src="9.jpg" style="width:100%; border-radius:5px;">
+                <img src="10.jpg" style="width:100%; border-radius:5px;">
+                <img src="11.jpg" style="width:100%; border-radius:5px;">
+                <img src="12.jpg" style="width:100%; border-radius:5px;">
+            </div>
+
+            <p style="margin-top:15px;">Провожаю Лерочку... Игровые автоматы на вокзале 🏀</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="баскетболист.mp4" loop></video></div>
+        </div>
+<p style="margin-top:15px;">Ждем поезд:</p>
+<div class="tg-video-wrapper" onclick="toggleVideo(this)">
+    <video class="tg-video" src="на вокзале.mp4" loop></video>
+    <div class="video-overlay"><i class="fas fa-play"></i></div>
+</div>
+    </div>
+
+
+    <div class="timeline-item">
+        <div class="date-badge">21 - 30 ноября 2025</div>
+        <div class="content-card">
+            <p><strong>21 ноября:</strong> В храме 🙏</p>
+            <img src="улыбаемся сидим.jpg" class="media-photo">
+            <img src="милая фоточка.jpg" class="media-photo">
+            
+            <p><strong>26-29 ноября:</strong> Милые ножки и мандаринка 🍊</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="ножки милые.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="мандаринка.mp4" loop></video></div>
+
+            <p><strong>30 ноября:</strong> Настроение баловаться (фото-подборка)</p>
+            <img src="Хе).jpg" class="media-photo">
+            <img src="Настроение баловаться.jpg" class="media-photo">
+            <img src="девочка.jpg" class="media-photo">
+        </div>
+    </div>
+        <div class="timeline-item">
+        <div class="date-badge">2 - 12 декабря 2025</div>
+        <div class="content-card">
+            <p><strong>2 декабря:</strong> Школьные будни и чтение книг 📚</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="в школе.mp4" loop></video></div>
+            <img src="за книгой.jpg" class="media-photo">
+
+            <p><strong>5-6 декабря:</strong> Милые щечки и Лерочка в храме 🙏</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="милые щечки.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="лерочка в храме.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="поцелуйчик.mp4" loop></video></div>
+
+            <p><strong>8-9 декабря:</strong> Фото-подборка от Лерочки и прекрасные губки 💋</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                <img src="первая.jpg" style="width:100%; border-radius:5px;">
+                <img src="вторая.jpg" style="width:100%; border-radius:5px;">
+                <img src="третья.jpg" style="width:100%; border-radius:5px;">
+            </div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="кружочек милый.mp4" loop></video></div>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="прекрасные губки.mp4" loop></video></div>
+
+            <p><strong>11-12 декабря:</strong> Приветы от Дани и Лерочка с кисточкой 🎨</p>
+<div class="tg-video-wrapper" onclick="toggleVideo(this)">
+    <video class="tg-video" src="язычок.mp4" loop></video>
+    <div class="video-overlay"><i class="fas fa-play"></i></div>
+</div>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="даня махает.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="милая с кисточкой за ушком.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+</div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge" style="background: #00bcd4;">14 - 29 декабря 2025</div>
+        <div class="content-card" style="border-left-color: #00bcd4;">
+            <h3>Наша встреча и первый снег ❄️</h3>
+            <p><strong>14 декабря:</strong> Кружочек под снегом у храма.</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="кружочек.mp4" loop></video></div>
+            <img src="возле храма.jpg" class="media-photo">
+
+            <p><strong>21 декабря:</strong> Опять встретились! Парк и сонная Лерочка 🥱</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="чуть не ушнула.mp4" loop></video></div>
+            <img src="фоточка с парка.jpg" class="media-photo">
+
+            <p><strong>29 декабря:</strong> Предновогодняя встреча. Поцелуи в Тейсти 🍔</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)"><video class="tg-video" src="29 декабря целуемся в тейсти.mp4" loop></video></div>
+            <img src="наулице.jpg" class="media-photo">
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge" style="background: linear-gradient(to right, #ff2e63, #00bcd4);">1 января 2026 🎄</div>
+        <div class="content-card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #ff2e63;">
+            <h2 style="text-align:center; color: #ff2e63;">С Новым Годом! 🎉</h2>
+            
+            <div style="margin-top:20px;">
+                <h4 style="color: #00bcd4;">Даня — Лере:</h4>
+                <div class="poem">
+                    "Любимая моя зайка с новым годом!
+Вот знаешь если бы еще год назад меня спросили об итогах года я бы наверное, просто перечислил какие то успехи по учебе или просто чего я достиг ну сказал бы дежурное "Ну, год прошел продуктивно, я стал на шаг ближе к целям" и всё
+Но 2025-й стал для меня особенным по одной единственной причине в нем появилась ты теперь оглядываясь назад я понимаю что мое главное достижение и самый большой подарок судьбы это ты. Именно Ты наполнила мою жизнь смыслом, нежностью и тем самым теплом которого мне так не хватало. Спасибо тебе за то, что ты есть хочу, чтобы в 2026-м мы стали еще ближе, и я обещаю делать тебя самой счастливой каждый день ТЫСЯЧИ ТЫСЯЧ РАЗ ЛЮБЛЮ"
+                </div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <h4 style="color: #ff85a1;">Лера — Дане:</h4>
+                <div class="poem">
+                    "Поздравляю тебя, мой лучик света с Новым годом, я очень хочу чтобы мы этот год провели вместе. Желаю чтобы в этом году было много при много теплых моментов! Я верю что этот год будет  намногооо лучше чем старый, тем более старый и так чудесен ведь в нем есть ты, мне очень нравится видеть тебя счастливым) Желаю чтобы весь тот свет в твоем сердце так и продолжал освещать всех близких людей) Предлагаю провести этот год вместе, так же близко как и эти четыре месяца, я тебя очень люблю мой зайчонок, первое я тебя люблю в этом году)"
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="timeline-item">
+        <div class="date-badge">3 - 10 января 2026</div>
+        <div class="content-card">
+            <p><strong>3 января:</strong> Просто ляпота ✨</p>
+            <img src="ляпота.jpg" class="media-photo">
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #333;">
+            
+            <h3 style="color: var(--accent-color);">10 января: Лерочка впервые дома у Дани 🏠 ❤️</h3>
+            <p>Этот день стал новой важной главой. Уют, цветной свет и мы рядом.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 15px;">
+                <img src="да).jpg" style="width:100%; border-radius:10px;">
+                <img src="дома у дани.jpg" style="width:100%; border-radius:10px;">
+                <img src="дяяя.jpg" style="width:100%; border-radius:10px;">
+                <img src="зеленый свет.jpg" style="width:100%; border-radius:10px;">
+                <img src="синий свет.jpg" style="width:100%; border-radius:10px;">
+                <img src="синий свет2.jpg" style="width:100%; border-radius:10px;">
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">20 - 28 января 2026</div>
+        <div class="content-card">
+            <p><strong>20-22 января:</strong> Лерочка в том самом прекрасном платьишке 👗 ✨</p>
+<div class="tg-video-wrapper" onclick="toggleVideo(this)">
+    <video class="tg-video" src="лерочка в прекрасном платьишке.mp4" loop></video>
+    <div class="video-overlay"><i class="fas fa-play"></i></div>
+</div>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="в платьишке.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+        <video class="tg-video" src="ох уж это прекрасное платьишко.mp4" loop></video>
+        <div class="video-overlay"><i class="fas fa-play"></i></div>
+    </div>
+</div>            </div>
+
+            <p style="margin-top:15px;"><strong>28 января:</strong> Привет из лета ☀️</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="просто кружочек который сделан летом.mp4" loop></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="date-badge">Февраль 2026</div>
+        <div class="content-card">
+            <p><strong>1 февраля:</strong> С Акимчиком и Елисеем 👦👦</p>
+<div style="display:flex; gap:10px; align-items: stretch;">
+    <img src="с акимчиком.jpg" style="width: 48%; height: 250px; object-fit: cover; border-radius: 10px;">
+    <img src="с елисеем.jpg" style="width: 48%; height: 250px; object-fit: cover; border-radius: 10px;">
+</div>
+
+            <p style="margin-top:15px;"><strong>2 февраля:</strong> Поцелуйчик, который пытается вырваться наружу 💋</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="поцелуйчик пытается вырваться наружу.mp4" loop></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+            <p>Милая девочка... ))</p>
+            <div class="tg-video-wrapper" onclick="toggleVideo(this)">
+                <video class="tg-video" src="милая девочка)).mp4" loop></video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+            </div>
+
+            <p style="margin-top:15px;"><strong>7 февраля:</strong> Пару фоточек напоследок 📸</p>
+            <div style="display:flex; gap:10px;">
+                <img src="пару.jpg" style="width:48%; border-radius:10px;">
+                <img src="фоточек.jpg" style="width:48%; border-radius:10px;">
+            </div>
+        </div>
+    </div>
+    </div>
+
+<footer>Продолжение следует... ❤️</footer>
+
+<script>
+    function createHearts() {
+        const bg = document.getElementById('hearts-bg');
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.className = 'heart-particle';
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            bg.appendChild(heart);
+            setTimeout(() => heart.remove(), 6000);
+        }, 300);
+    }
+
+    const startDate = new Date('2025-08-27T22:57:15');
+    function updateTimer() {
+        const now = new Date();
+        const diff = now - startDate;
+
+        // Расчет только дней, часов, минут и секунд
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        // Вывод обновленного формата
+        document.getElementById('timer').innerHTML = `
+            <div class="timer-unit"><span>${days}</span>дн</div>
+            <div class="timer-unit"><span>${hours}</span>ч</div>
+            <div class="timer-unit"><span>${mins}</span>мин</div>
+            <div class="timer-unit"><span>${secs}</span>сек</div>
+        `;
+    }
+    function toggleVideo(container) {
+        const video = container.querySelector('video');
+        const overlay = container.querySelector('.video-overlay');
+        if (video.paused) {
+            video.play();
+            overlay.style.opacity = '0';
+        } else {
+            video.pause();
+            overlay.style.opacity = '1';
+        }
+    }
+
+    createHearts();
+    setInterval(updateTimer, 1000);
+    updateTimer();
+    // Функция для увеличения фото
+document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG' && e.target.id !== 'modalImg') {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        modal.style.display = 'flex';
+        modalImg.src = e.target.src;
+    }
+});
+</script>
+</body>
+</html>
+
+
+
+
